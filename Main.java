@@ -5,30 +5,16 @@ import java.util.function.Function;
 class Solutions {
     public static void main(String args[]) {
         Solutions sol = new Solutions();
-        String removedZeroes = sol.removeTrailingZeros("51230100");
-        String pushedDominoes = sol.pushDominoes(".L.R...LR..L..");
-        int longestMountain = sol.longestMountain(new int[]{2,1,4,7,3,2,5,6,7,4});
-        List<Integer> partitionLabels = sol.partitionLabels("eaaaabaaec");
-        List<Integer> findAnagrams = sol.findAnagrams("cbaebabacd", "abc");
-        List<Integer> findIntersection = sol.intersection(new int[][] {
-            {3, 1, 2, 4, 5},
-            {1, 2, 3, 4},
-            {3, 4, 5, 6}
-        });
-        String result = sol.makeGood("abBAcC");
-        long[] resultCon = sol.sumOfThree(31676770);
-        int maxFrequency = sol.maxFrequency(new int[]{1,1,1,2,2,4}, 2);
-        String[] words = sol.findWords(new String[]{"Hello","Alaska","Dad","Peace"});
-        int[] findMissAndRepeat = sol.findMissingAndRepeatedValues(new int[][]{
-            {9,1,7},{8,9,2},{3,4,6}
-        });
-        int maxSubSeq = sol.maxLengthBetweenEqualCharacters("cbzxyasdad");
-        int maxSumHourGlass = sol.maxSumHourglass(new int[][]{
-            {6,2,1,3},{4,2,1,5},{9,2,8,7},{4,1,2,9}
-        });
-        int longestPal = sol.longestPalindrome(new String[]{"ab","ty","yt","lc","cl","ab"});
-        int lngThrice = sol.maximumLengthOccursThrice("aaaab");
-        System.out.println(lngThrice);
+        int numSub = sol.countCompleteSubarrays(new int[]{1,3,1,2,2});
+        int maxlen = sol.maxSubarrayLength(new int[]{1,2,3,1,2,3,1,2}, 2);
+        int maxLenTwo = sol.maximumLengthSubstringTwo("bcbbbcba");
+        int maxErase = sol.maxErasureValue(new int[]{4,2,4,5,6});
+
+        List<Integer> list = new ArrayList<>(Arrays.asList(8,3,9,9,9,9,6,2,6,6,9,1,9));
+        int maxSubLen = sol.longestEqualSubarray(list, 0);
+        int minSizeArray = sol.minSubArrayLen(11, new int[] {1,2,3,4,5});
+        int middleIndex = sol.findMiddleIndex(new int[]{2,3,-1,8,4});
+        System.out.println(middleIndex);
     }
 
     // removing trailing zeroes
@@ -558,7 +544,6 @@ class Solutions {
                     }else{
                         map.put(sb.toString(), 1);
                     }
-            
                 }   else{// no continuation here
                     break;
                 }
@@ -570,6 +555,191 @@ class Solutions {
             }
         }
         return max;
+    }
+
+    // with additional constraints
+    public int maximumLengthII(String s) {
+        int max = -1;
+        HashMap<String, Integer> map = new HashMap<>();
+        for (int i = 0; i < s.length(); i++){
+            char startChar = s.charAt(i);
+            int len = 1;
+            StringBuilder sb = new StringBuilder();
+            sb.append(startChar);
+            String sbString = sb.toString();
+            map.put(sbString, map.getOrDefault(sbString, 0) + 1);
+            for (int j = i + 1; j < s.length(); j++){  
+                if (s.charAt(j) == s.charAt(j - 1)){
+                    len++;
+                    sb.append(s.charAt(j));
+                    String sbPString = sb.toString();
+                    map.put(sbPString, map.getOrDefault(sbPString, 0) + 1);
+                }else{
+                    break;
+                }
+            }
+        }
+        for (Map.Entry<String, Integer> entry: map.entrySet()){
+            if (entry.getValue() >= 3){
+                max = Math.max(max, entry.getKey().length());
+            }
+        }
+        return max;
+    }
+
+    // number of distinct subarrays is equal to the distinct el in the entire arrays
+    public int countCompleteSubarrays(int[] nums) {
+        int counter = 0;
+        HashSet<Integer> set = new HashSet<>();
+        HashSet<Integer> subSet = new HashSet<>();
+        for (int num: nums){
+            set.add(num);
+        }
+        for (int i = 0; i < nums.length; i++){
+            subSet.clear();
+            for (int j = i; j < nums.length; j++){
+                subSet.add(nums[j]);
+                if (subSet.size() == set.size()){
+                    counter++;
+                }
+            }
+
+        }
+        return counter;
+    }
+
+    // number of occurence should be less than or equal to k max .. shrink window when it exceeds k
+    public int maxSubarrayLength(int[] nums, int k) {
+        HashMap<Integer, Integer> map = new HashMap<>();
+        int end = 0;
+        int start = 0;
+        int maxLen = 0;
+        while(end < nums.length){
+            int currEl = nums[end];
+            map.put(currEl, map.getOrDefault(currEl, 0) + 1);
+            while (map.get(nums[end]) > k){
+                if (map.containsKey(nums[start])){
+                    map.put(nums[start], map.get(nums[start]) - 1);
+                    if (map.get(nums[start]) == 0){
+                        map.remove(nums[start]);
+                    }
+                }
+                start++;
+            }
+            maxLen = Math.max(end - start + 1, maxLen);
+            end++;
+        }
+        return maxLen;
+    }
+
+    // max two occurence of a single char
+    public int maximumLengthSubstringTwo(String s) {
+        int max = 0;
+        Map<Character, Integer> map = new HashMap<>();
+        int start = 0;
+        for(int i = 0; i < s.length(); i++){
+            char currChar = s.charAt(i);
+            map.put(currChar, map.getOrDefault(currChar, 0) + 1);
+            while(map.get(s.charAt(i)) > 2){
+                if(map.containsKey(s.charAt(start))){
+                    map.put(s.charAt(start), map.get(s.charAt(start)) - 1);
+                    if(map.get(s.charAt(start)) == 0){
+                        map.remove(s.charAt(start));
+                    }
+                }
+                start++;
+            }
+            max = Math.max(i - start + 1, max);
+        }
+        return max;
+    }
+
+
+    // maximum erasure value
+    public int maxErasureValue(int[] nums) {
+        int max = 0;
+        int total = 0;
+        int start = 0;
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++){
+            int currNum = nums[i];
+            total += currNum;
+            map.put(currNum, map.getOrDefault(currNum, 0) + 1);
+            while(map.get(currNum) > 1){
+                total -= nums[start];
+                if (map.containsKey(nums[start])){
+                    map.put(nums[start], map.get(nums[start]) - 1);
+                    if(map.get(nums[start]) == 0){
+                        map.remove(nums[start]);
+                    }
+                }
+                start++;
+            }
+            max = Math.max(max, total);
+        }
+        return max;
+    }
+
+    // longest subarray after deletion
+    public int longestEqualSubarray(List<Integer> nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        int end = 0;
+        int start = 0;
+        int maxFreq = 0;
+        while(end < nums.size()){
+            int currEl = nums.get(end);
+            map.put(currEl, map.getOrDefault(currEl, 0) + 1);
+            maxFreq = Math.max(maxFreq, map.get(currEl));
+      
+            if((end - start + 1 - maxFreq > k)){
+                map.put(nums.get(start), map.get(nums.get(start)) - 1);
+                if (map.get(nums.get(start)) == 0){
+                    map.remove(nums.get(start));
+                }
+
+                start++;
+            }
+            end++;
+        }
+        return maxFreq;
+    }
+
+
+    // minimum size subarrays
+    // simple sliding window approach
+    public int minSubArrayLen(int target, int[] nums) {
+        int minLength = Integer.MAX_VALUE;
+        int total = 0;
+        int start = 0;
+        for (int end = 0; end < nums.length; end++){
+            int currEl = nums[end];
+            total += currEl;
+            while(total >= target){
+                minLength = Math.min(minLength, end - start + 1);
+                total -= nums[start];
+                start++;
+            }
+        }
+        return minLength == 2147483647 ? 0 : minLength;
+    }
+
+
+    // checking middle index... same question as pivot index
+    public int findMiddleIndex(int[] nums) {
+        int left = 0;
+        int prefixSum = 0;
+        int totalSum = 0;
+        for (int num:nums){
+            totalSum += num;
+        }
+        while(left < nums.length){
+            if (prefixSum == totalSum - prefixSum - nums[left]){ // current element need to minused
+                return left ;
+            }
+            prefixSum += nums[left];
+            left++;
+        }
+        return -1;
     }
 
 }
